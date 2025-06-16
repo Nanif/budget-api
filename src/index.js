@@ -1,5 +1,5 @@
 /**
- * Main application entry point
+ * Family Budget Management API - Main application entry point
  */
 
 import express from 'express';
@@ -7,7 +7,12 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { config } from './config/index.js';
 import { logger } from './utils/logger.js';
+
+// Import routes
 import taskRoutes from './routes/taskRoutes.js';
+import budgetYearRoutes from './routes/budgetYears.js';
+import fundRoutes from './routes/funds.js';
+import categoryRoutes from './routes/categories.js';
 
 // Load environment variables
 dotenv.config();
@@ -33,12 +38,31 @@ app.get('/health', (req, res) => {
   res.json({
     status: 'OK',
     timestamp: new Date().toISOString(),
-    version: config.APP_VERSION
+    version: config.APP_VERSION,
+    service: 'Family Budget API'
   });
 });
 
 // API routes
 app.use('/api/tasks', taskRoutes);
+app.use('/api/budget-years', budgetYearRoutes);
+app.use('/api/funds', fundRoutes);
+app.use('/api/categories', categoryRoutes);
+
+// Root endpoint
+app.get('/', (req, res) => {
+  res.json({
+    message: 'Family Budget Management API',
+    version: config.APP_VERSION,
+    endpoints: {
+      health: '/health',
+      tasks: '/api/tasks',
+      budgetYears: '/api/budget-years',
+      funds: '/api/funds',
+      categories: '/api/categories'
+    }
+  });
+});
 
 // 404 handler
 app.use('*', (req, res) => {
@@ -66,9 +90,9 @@ async function startServer() {
     const host = config.HOST;
     
     app.listen(port, host, () => {
-      logger.info(`🚀 Server running on http://${host}:${port}`);
+      logger.info(`🚀 Family Budget API running on http://${host}:${port}`);
       logger.info(`📊 Health check: http://${host}:${port}/health`);
-      logger.info(`📝 Tasks API: http://${host}:${port}/api/tasks`);
+      logger.info(`📝 API Documentation: http://${host}:${port}/`);
       logger.info(`Environment: ${config.NODE_ENV}`);
     });
   } catch (error) {
