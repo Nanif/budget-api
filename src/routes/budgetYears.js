@@ -10,7 +10,69 @@ import { logger } from '../utils/logger.js';
 const router = express.Router();
 router.use(getUserId);
 
-// GET / - Get all budget years
+/**
+ * @swagger
+ * tags:
+ *   name: Budget Years
+ *   description: Budget year management endpoints
+ */
+
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     BudgetYearInput:
+ *       type: object
+ *       required:
+ *         - name
+ *         - start_date
+ *         - end_date
+ *       properties:
+ *         name:
+ *           type: string
+ *           description: Budget year name
+ *           example: "01/25 - 12/25"
+ *         start_date:
+ *           type: string
+ *           format: date
+ *           description: Budget year start date
+ *           example: "2025-01-01"
+ *         end_date:
+ *           type: string
+ *           format: date
+ *           description: Budget year end date
+ *           example: "2025-12-31"
+ *         is_active:
+ *           type: boolean
+ *           description: Whether this budget year is active
+ *           example: true
+ */
+
+/**
+ * @swagger
+ * /api/budget-years:
+ *   get:
+ *     summary: Get all budget years
+ *     tags: [Budget Years]
+ *     responses:
+ *       200:
+ *         description: Budget years retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/BudgetYear'
+ *                 message:
+ *                   type: string
+ *                   example: "Budget years retrieved successfully"
+ */
 router.get('/', async (req, res) => {
   try {
     const budgetYears = await BudgetYearService.getAllBudgetYears(req.userId);
@@ -29,7 +91,31 @@ router.get('/', async (req, res) => {
   }
 });
 
-// GET /active - Get active budget year
+/**
+ * @swagger
+ * /api/budget-years/active:
+ *   get:
+ *     summary: Get the active budget year
+ *     tags: [Budget Years]
+ *     responses:
+ *       200:
+ *         description: Active budget year retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   $ref: '#/components/schemas/BudgetYear'
+ *                 message:
+ *                   type: string
+ *                   example: "Active budget year retrieved successfully"
+ *       404:
+ *         description: No active budget year found
+ */
 router.get('/active', async (req, res) => {
   try {
     const budgetYear = await BudgetYearService.getActiveBudgetYear(req.userId);
@@ -48,7 +134,39 @@ router.get('/active', async (req, res) => {
   }
 });
 
-// GET /:id - Get specific budget year
+/**
+ * @swagger
+ * /api/budget-years/{id}:
+ *   get:
+ *     summary: Get a specific budget year
+ *     tags: [Budget Years]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Budget year ID
+ *     responses:
+ *       200:
+ *         description: Budget year retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   $ref: '#/components/schemas/BudgetYear'
+ *                 message:
+ *                   type: string
+ *                   example: "Budget year retrieved successfully"
+ *       404:
+ *         description: Budget year not found
+ */
 router.get('/:id', async (req, res) => {
   try {
     const budgetYear = await BudgetYearService.getBudgetYearById(req.params.id, req.userId);
@@ -67,7 +185,37 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// POST / - Create new budget year
+/**
+ * @swagger
+ * /api/budget-years:
+ *   post:
+ *     summary: Create a new budget year
+ *     tags: [Budget Years]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/BudgetYearInput'
+ *     responses:
+ *       201:
+ *         description: Budget year created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   $ref: '#/components/schemas/BudgetYear'
+ *                 message:
+ *                   type: string
+ *                   example: "Budget year created successfully"
+ *       400:
+ *         description: Bad request - missing required fields
+ */
 router.post('/', async (req, res) => {
   try {
     const { name, start_date, end_date, is_active } = req.body;
@@ -102,7 +250,45 @@ router.post('/', async (req, res) => {
   }
 });
 
-// PUT /:id - Update budget year
+/**
+ * @swagger
+ * /api/budget-years/{id}:
+ *   put:
+ *     summary: Update a budget year
+ *     tags: [Budget Years]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Budget year ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 example: "01/25 - 12/25"
+ *               start_date:
+ *                 type: string
+ *                 format: date
+ *                 example: "2025-01-01"
+ *               end_date:
+ *                 type: string
+ *                 format: date
+ *                 example: "2025-12-31"
+ *               is_active:
+ *                 type: boolean
+ *                 example: true
+ *     responses:
+ *       200:
+ *         description: Budget year updated successfully
+ */
 router.put('/:id', async (req, res) => {
   try {
     const { name, start_date, end_date, is_active } = req.body;
@@ -129,7 +315,24 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// PUT /:id/activate - Activate budget year
+/**
+ * @swagger
+ * /api/budget-years/{id}/activate:
+ *   put:
+ *     summary: Activate a budget year (deactivates all others)
+ *     tags: [Budget Years]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Budget year ID
+ *     responses:
+ *       200:
+ *         description: Budget year activated successfully
+ */
 router.put('/:id/activate', async (req, res) => {
   try {
     const budgetYear = await BudgetYearService.activateBudgetYear(req.params.id, req.userId);
@@ -148,7 +351,28 @@ router.put('/:id/activate', async (req, res) => {
   }
 });
 
-// DELETE /:id - Delete budget year
+/**
+ * @swagger
+ * /api/budget-years/{id}:
+ *   delete:
+ *     summary: Delete a budget year
+ *     tags: [Budget Years]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Budget year ID
+ *     responses:
+ *       200:
+ *         description: Budget year deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessResponse'
+ */
 router.delete('/:id', async (req, res) => {
   try {
     await BudgetYearService.deleteBudgetYear(req.params.id, req.userId);

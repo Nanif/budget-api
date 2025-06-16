@@ -5,7 +5,9 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import swaggerUi from 'swagger-ui-express';
 import { config } from './config/index.js';
+import { specs } from './config/swagger.js';
 import { logger } from './utils/logger.js';
 
 // Import routes
@@ -39,6 +41,13 @@ app.use((req, res, next) => {
   next();
 });
 
+// Swagger Documentation
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs, {
+  explorer: true,
+  customCss: '.swagger-ui .topbar { display: none }',
+  customSiteTitle: 'Family Budget API Documentation'
+}));
+
 // Health check endpoint
 app.get('/health', (req, res) => {
   res.json({
@@ -66,8 +75,10 @@ app.get('/', (req, res) => {
   res.json({
     message: 'Family Budget Management API',
     version: config.APP_VERSION,
+    documentation: '/api-docs',
     endpoints: {
       health: '/health',
+      documentation: '/api-docs',
       dashboard: '/api/dashboard',
       tasks: '/api/tasks',
       budgetYears: '/api/budget-years',
@@ -110,7 +121,8 @@ async function startServer() {
     app.listen(port, host, () => {
       logger.info(`🚀 Family Budget API running on http://${host}:${port}`);
       logger.info(`📊 Health check: http://${host}:${port}/health`);
-      logger.info(`📝 API Documentation: http://${host}:${port}/`);
+      logger.info(`📚 API Documentation: http://${host}:${port}/api-docs`);
+      logger.info(`📝 API Endpoints: http://${host}:${port}/`);
       logger.info(`Environment: ${config.NODE_ENV}`);
     });
   } catch (error) {

@@ -11,7 +11,101 @@ const router = express.Router();
 router.use(getUserId);
 
 /**
- * GET /api/tasks - Get all tasks with filters
+ * @swagger
+ * components:
+ *   schemas:
+ *     TaskInput:
+ *       type: object
+ *       required:
+ *         - title
+ *       properties:
+ *         title:
+ *           type: string
+ *           description: Task title
+ *           example: "Complete project documentation"
+ *         description:
+ *           type: string
+ *           description: Task description
+ *           example: "Write comprehensive API documentation"
+ *         important:
+ *           type: boolean
+ *           description: Whether the task is important
+ *           example: true
+ *     TaskUpdate:
+ *       type: object
+ *       properties:
+ *         title:
+ *           type: string
+ *           example: "Updated task title"
+ *         description:
+ *           type: string
+ *           example: "Updated task description"
+ *         completed:
+ *           type: boolean
+ *           example: true
+ *         important:
+ *           type: boolean
+ *           example: false
+ */
+
+/**
+ * @swagger
+ * /api/tasks:
+ *   get:
+ *     summary: Get all tasks with optional filters
+ *     tags: [Tasks]
+ *     parameters:
+ *       - in: query
+ *         name: completed
+ *         schema:
+ *           type: boolean
+ *         description: Filter by completion status
+ *       - in: query
+ *         name: important
+ *         schema:
+ *           type: boolean
+ *         description: Filter by importance
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Search in title and description
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: Page number for pagination
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 50
+ *         description: Number of items per page
+ *     responses:
+ *       200:
+ *         description: Tasks retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Task'
+ *                 message:
+ *                   type: string
+ *                   example: "Tasks retrieved successfully"
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  */
 router.get('/', async (req, res) => {
   try {
@@ -40,7 +134,43 @@ router.get('/', async (req, res) => {
 });
 
 /**
- * GET /api/tasks/summary - Get task summary
+ * @swagger
+ * /api/tasks/summary:
+ *   get:
+ *     summary: Get task summary statistics
+ *     tags: [Tasks]
+ *     responses:
+ *       200:
+ *         description: Task summary retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     totalTasks:
+ *                       type: integer
+ *                       example: 25
+ *                     completedTasks:
+ *                       type: integer
+ *                       example: 15
+ *                     pendingTasks:
+ *                       type: integer
+ *                       example: 10
+ *                     importantTasks:
+ *                       type: integer
+ *                       example: 5
+ *                     completionRate:
+ *                       type: number
+ *                       example: 60.0
+ *                 message:
+ *                   type: string
+ *                   example: "Task summary retrieved successfully"
  */
 router.get('/summary', async (req, res) => {
   try {
@@ -61,7 +191,41 @@ router.get('/summary', async (req, res) => {
 });
 
 /**
- * GET /api/tasks/:id - Get a specific task
+ * @swagger
+ * /api/tasks/{id}:
+ *   get:
+ *     summary: Get a specific task by ID
+ *     tags: [Tasks]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Task ID
+ *     responses:
+ *       200:
+ *         description: Task retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   $ref: '#/components/schemas/Task'
+ *                 message:
+ *                   type: string
+ *                   example: "Task retrieved successfully"
+ *       404:
+ *         description: Task not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  */
 router.get('/:id', async (req, res) => {
   try {
@@ -82,7 +246,39 @@ router.get('/:id', async (req, res) => {
 });
 
 /**
- * POST /api/tasks - Create a new task
+ * @swagger
+ * /api/tasks:
+ *   post:
+ *     summary: Create a new task
+ *     tags: [Tasks]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/TaskInput'
+ *     responses:
+ *       201:
+ *         description: Task created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   $ref: '#/components/schemas/Task'
+ *                 message:
+ *                   type: string
+ *                   example: "Task created successfully"
+ *       400:
+ *         description: Bad request - missing required fields
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  */
 router.post('/', async (req, res) => {
   try {
@@ -118,7 +314,47 @@ router.post('/', async (req, res) => {
 });
 
 /**
- * PUT /api/tasks/:id - Update a task
+ * @swagger
+ * /api/tasks/{id}:
+ *   put:
+ *     summary: Update a task
+ *     tags: [Tasks]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Task ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/TaskUpdate'
+ *     responses:
+ *       200:
+ *         description: Task updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   $ref: '#/components/schemas/Task'
+ *                 message:
+ *                   type: string
+ *                   example: "Task updated successfully"
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  */
 router.put('/:id', async (req, res) => {
   try {
@@ -147,7 +383,35 @@ router.put('/:id', async (req, res) => {
 });
 
 /**
- * PATCH /api/tasks/:id/toggle - Toggle task completion
+ * @swagger
+ * /api/tasks/{id}/toggle:
+ *   patch:
+ *     summary: Toggle task completion status
+ *     tags: [Tasks]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Task ID
+ *     responses:
+ *       200:
+ *         description: Task completion status toggled successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   $ref: '#/components/schemas/Task'
+ *                 message:
+ *                   type: string
+ *                   example: "Task completion status toggled successfully"
  */
 router.patch('/:id/toggle', async (req, res) => {
   try {
@@ -168,7 +432,32 @@ router.patch('/:id/toggle', async (req, res) => {
 });
 
 /**
- * DELETE /api/tasks/:id - Delete a task
+ * @swagger
+ * /api/tasks/{id}:
+ *   delete:
+ *     summary: Delete a task
+ *     tags: [Tasks]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Task ID
+ *     responses:
+ *       200:
+ *         description: Task deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessResponse'
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  */
 router.delete('/:id', async (req, res) => {
   try {
@@ -188,7 +477,31 @@ router.delete('/:id', async (req, res) => {
 });
 
 /**
- * DELETE /api/tasks/completed/all - Delete all completed tasks
+ * @swagger
+ * /api/tasks/completed/all:
+ *   delete:
+ *     summary: Delete all completed tasks
+ *     tags: [Tasks]
+ *     responses:
+ *       200:
+ *         description: All completed tasks deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     deletedCount:
+ *                       type: integer
+ *                       example: 5
+ *                 message:
+ *                   type: string
+ *                   example: "All completed tasks deleted successfully"
  */
 router.delete('/completed/all', async (req, res) => {
   try {
