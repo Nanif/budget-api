@@ -7,7 +7,8 @@
   "scripts": {
     "start": "node src/index.js",
     "dev": "node --watch src/index.js",
-    "test": "echo \"Add your tests here\" && exit 0"
+    "test": "echo \"Add your tests here\" && exit 0",
+    "build": "npm install"
   },
   "keywords": ["nodejs", "javascript", "supabase", "budget", "family"],
   "author": "",
