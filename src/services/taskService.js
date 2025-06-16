@@ -7,15 +7,36 @@ import { logger } from '../utils/logger.js';
 
 export class TaskService {
   /**
-   * Get all tasks for a user
+   * Get all tasks for a user with filters
    */
-  static async getAllTasks(userId) {
+  static async getAllTasks(userId, filters = {}) {
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('tasks')
         .select('*')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false });
+        .eq('user_id', userId);
+
+      // Apply filters
+      if (filters.completed !== undefined) {
+        query = query.eq('completed', filters.completed);
+      }
+      if (filters.important !== undefined) {
+        query = query.eq('important', filters.important);
+      }
+      if (filters.search) {
+        query = query.or(`title.ilike.%${filters.search}%,description.ilike.%${filters.search}%`);
+      }
+
+      // Pagination
+      const page = parseInt(filters.page) || 1;
+      const limit = parseInt(filters.limit) || 50;
+      const offset = (page - 1) * limit;
+
+      query = query
+        .order('created_at', { ascending: false })
+        .range(offset, offset + limit - 1);
+
+      const { data, error } = await query;
 
       if (error) throw error;
       return data;
@@ -73,6 +94,11 @@ export class TaskService {
    */
   static async updateTask(taskId, taskData, userId) {
     try {
+      // Handle completion timestamp
+      if (taskData.completed !== undefined) {
+        taskData.completed_at = taskData.completed ? new Date().toISOString() : null;
+      }
+
       const { data, error } = await supabase
         .from('tasks')
         .update(taskData)
@@ -121,7 +147,10 @@ export class TaskService {
       // Toggle the completed status
       const { data, error } = await supabase
         .from('tasks')
-        .update({ completed: !currentTask.completed })
+        .update({ 
+          completed: !currentTask.completed,
+          completed_at: !currentTask.completed ? new Date().toISOString() : null
+        })
         .eq('id', taskId)
         .eq('user_id', userId)
         .select()
@@ -132,6 +161,57 @@ export class TaskService {
       return data;
     } catch (error) {
       logger.error('Error toggling task completion:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Delete all completed tasks
+   */
+  static async deleteAllCompletedTasks(userId) {
+    try {
+      const { data, error } = await supabase
+        .from('tasks')
+        .delete()
+        .eq('user_id', userId)
+        .eq('completed', true)
+        .select();
+
+      if (error) throw error;
+      logger.info(`Deleted ${data.length} completed tasks for user:`, userId);
+      return { deletedCount: data.length };
+    } catch (error) {
+      logger.error('Error deleting completed tasks:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get task summary
+   */
+  static async getTaskSummary(userId) {
+    try {
+      const { data, error } = await supabase
+        .from('tasks')
+        .select('completed, important')
+        .eq('user_id', userId);
+
+      if (error) throw error;
+
+      const totalTasks = data.length;
+      const completedTasks = data.filter(task => task.completed).length;
+      const pendingTasks = totalTasks - completedTasks;
+      const importantTasks = data.filter(task => task.important && !task.completed).length;
+
+      return {
+        totalTasks,
+        completedTasks,
+        pendingTasks,
+        importantTasks,
+        completionRate: totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0
+      };
+    } catch (error) {
+      logger.error('Error getting task summary:', error);
       throw error;
     }
   }

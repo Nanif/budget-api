@@ -13,6 +13,12 @@ import taskRoutes from './routes/taskRoutes.js';
 import budgetYearRoutes from './routes/budgetYears.js';
 import fundRoutes from './routes/funds.js';
 import categoryRoutes from './routes/categories.js';
+import incomeRoutes from './routes/incomes.js';
+import expenseRoutes from './routes/expenses.js';
+import titheRoutes from './routes/tithe.js';
+import debtRoutes from './routes/debts.js';
+import assetRoutes from './routes/assets.js';
+import dashboardRoutes from './routes/dashboard.js';
 
 // Load environment variables
 dotenv.config();
@@ -48,6 +54,12 @@ app.use('/api/tasks', taskRoutes);
 app.use('/api/budget-years', budgetYearRoutes);
 app.use('/api/funds', fundRoutes);
 app.use('/api/categories', categoryRoutes);
+app.use('/api/incomes', incomeRoutes);
+app.use('/api/expenses', expenseRoutes);
+app.use('/api/tithe', titheRoutes);
+app.use('/api/debts', debtRoutes);
+app.use('/api/assets', assetRoutes);
+app.use('/api/dashboard', dashboardRoutes);
 
 // Root endpoint
 app.get('/', (req, res) => {
@@ -56,10 +68,16 @@ app.get('/', (req, res) => {
     version: config.APP_VERSION,
     endpoints: {
       health: '/health',
+      dashboard: '/api/dashboard',
       tasks: '/api/tasks',
       budgetYears: '/api/budget-years',
       funds: '/api/funds',
-      categories: '/api/categories'
+      categories: '/api/categories',
+      incomes: '/api/incomes',
+      expenses: '/api/expenses',
+      tithe: '/api/tithe',
+      debts: '/api/debts',
+      assets: '/api/assets'
     }
   });
 });

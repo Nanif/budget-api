@@ -4,26 +4,26 @@
 
 import express from 'express';
 import { TaskService } from '../services/taskService.js';
+import { getUserId } from '../middleware/auth.js';
 import { logger } from '../utils/logger.js';
 
 const router = express.Router();
-
-// Middleware to extract user ID (in a real app, this would come from JWT token)
-const getUserId = (req, res, next) => {
-  // For demo purposes, we'll use a header or default user
-  // In production, extract this from JWT token
-  req.userId = req.headers['x-user-id'] || 'demo-user-id';
-  next();
-};
-
 router.use(getUserId);
 
 /**
- * GET /api/tasks - Get all tasks
+ * GET /api/tasks - Get all tasks with filters
  */
 router.get('/', async (req, res) => {
   try {
-    const tasks = await TaskService.getAllTasks(req.userId);
+    const filters = {
+      completed: req.query.completed !== undefined ? req.query.completed === 'true' : undefined,
+      important: req.query.important !== undefined ? req.query.important === 'true' : undefined,
+      search: req.query.search,
+      page: req.query.page,
+      limit: req.query.limit
+    };
+
+    const tasks = await TaskService.getAllTasks(req.userId, filters);
     res.json({
       success: true,
       data: tasks,
@@ -34,6 +34,27 @@ router.get('/', async (req, res) => {
     res.status(500).json({
       success: false,
       error: 'Failed to retrieve tasks',
+      message: error.message
+    });
+  }
+});
+
+/**
+ * GET /api/tasks/summary - Get task summary
+ */
+router.get('/summary', async (req, res) => {
+  try {
+    const summary = await TaskService.getTaskSummary(req.userId);
+    res.json({
+      success: true,
+      data: summary,
+      message: 'Task summary retrieved successfully'
+    });
+  } catch (error) {
+    logger.error('Error in GET /api/tasks/summary:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to retrieve task summary',
       message: error.message
     });
   }
@@ -65,7 +86,7 @@ router.get('/:id', async (req, res) => {
  */
 router.post('/', async (req, res) => {
   try {
-    const { title, description } = req.body;
+    const { title, description, important } = req.body;
     
     if (!title) {
       return res.status(400).json({
@@ -76,7 +97,8 @@ router.post('/', async (req, res) => {
 
     const taskData = {
       title,
-      description: description || ''
+      description: description || '',
+      important: important || false
     };
 
     const task = await TaskService.createTask(taskData, req.userId);
@@ -100,12 +122,13 @@ router.post('/', async (req, res) => {
  */
 router.put('/:id', async (req, res) => {
   try {
-    const { title, description, completed } = req.body;
+    const { title, description, completed, important } = req.body;
     
     const taskData = {};
     if (title !== undefined) taskData.title = title;
     if (description !== undefined) taskData.description = description;
     if (completed !== undefined) taskData.completed = completed;
+    if (important !== undefined) taskData.important = important;
 
     const task = await TaskService.updateTask(req.params.id, taskData, req.userId);
     res.json({
@@ -118,6 +141,27 @@ router.put('/:id', async (req, res) => {
     res.status(500).json({
       success: false,
       error: 'Failed to update task',
+      message: error.message
+    });
+  }
+});
+
+/**
+ * PATCH /api/tasks/:id/toggle - Toggle task completion
+ */
+router.patch('/:id/toggle', async (req, res) => {
+  try {
+    const task = await TaskService.toggleTaskCompletion(req.params.id, req.userId);
+    res.json({
+      success: true,
+      data: task,
+      message: 'Task completion status toggled successfully'
+    });
+  } catch (error) {
+    logger.error('Error in PATCH /api/tasks/:id/toggle:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to toggle task completion',
       message: error.message
     });
   }
@@ -144,21 +188,21 @@ router.delete('/:id', async (req, res) => {
 });
 
 /**
- * PATCH /api/tasks/:id/toggle - Toggle task completion
+ * DELETE /api/tasks/completed/all - Delete all completed tasks
  */
-router.patch('/:id/toggle', async (req, res) => {
+router.delete('/completed/all', async (req, res) => {
   try {
-    const task = await TaskService.toggleTaskCompletion(req.params.id, req.userId);
+    const result = await TaskService.deleteAllCompletedTasks(req.userId);
     res.json({
       success: true,
-      data: task,
-      message: 'Task completion status toggled successfully'
+      data: result,
+      message: 'All completed tasks deleted successfully'
     });
   } catch (error) {
-    logger.error('Error in PATCH /api/tasks/:id/toggle:', error);
+    logger.error('Error in DELETE /api/tasks/completed/all:', error);
     res.status(500).json({
       success: false,
-      error: 'Failed to toggle task completion',
+      error: 'Failed to delete completed tasks',
       message: error.message
     });
   }
