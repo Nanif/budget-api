@@ -11,40 +11,54 @@ export class TaskService {
    */
   static async getAllTasks(userId, filters = {}) {
     try {
+      console.log('🟡 getAllTasks called with userId:', userId);
+      console.log('🟡 Filters received:', filters);
+  
       let query = supabase
         .from('tasks')
         .select('*')
         .eq('user_id', userId);
-
+  
       // Apply filters
       if (filters.completed !== undefined) {
+        console.log('🔵 Applying filter: completed =', filters.completed);
         query = query.eq('completed', filters.completed);
       }
       if (filters.important !== undefined) {
+        console.log('🔵 Applying filter: important =', filters.important);
         query = query.eq('important', filters.important);
       }
       if (filters.search) {
+        console.log('🔵 Applying search filter:', filters.search);
         query = query.or(`title.ilike.%${filters.search}%,description.ilike.%${filters.search}%`);
       }
-
+  
       // Pagination
       const page = parseInt(filters.page) || 1;
       const limit = parseInt(filters.limit) || 50;
       const offset = (page - 1) * limit;
-
+  
+      console.log(`🔵 Applying pagination: page=${page}, limit=${limit}, offset=${offset}`);
+  
       query = query
         .order('created_at', { ascending: false })
         .range(offset, offset + limit - 1);
-
+  
       const { data, error } = await query;
-
-      if (error) throw error;
+  
+      if (error) {
+        console.error('🔴 Supabase query error:', error);
+        throw error;
+      }
+  
+      console.log('🟢 Tasks fetched successfully. Count:', data?.length || 0);
       return data;
     } catch (error) {
-      logger.error('Error fetching tasks:', error);
+      console.error('🔴 Error in getAllTasks:', error);
       throw error;
     }
   }
+  
 
   /**
    * Get a single task by ID

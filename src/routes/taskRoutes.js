@@ -109,6 +109,8 @@ router.use(getUserId);
  */
 router.get('/', async (req, res) => {
   try {
+    console.log("fgdfgdsfgrfv");
+    
     const filters = {
       completed: req.query.completed !== undefined ? req.query.completed === 'true' : undefined,
       important: req.query.important !== undefined ? req.query.important === 'true' : undefined,
@@ -116,8 +118,10 @@ router.get('/', async (req, res) => {
       page: req.query.page,
       limit: req.query.limit
     };
+    console.log("fgdfgdsfgrfv1111");
 
     const tasks = await TaskService.getAllTasks(req.userId, filters);
+    logger.info("Tasks retrieved successfully", tasks);
     res.json({
       success: true,
       data: tasks,
