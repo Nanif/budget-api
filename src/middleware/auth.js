@@ -35,6 +35,9 @@ export const authenticateToken = async (req, res, next) => {
 
 export const getUserId = (req, res, next) => {
   // For demo purposes, we'll use a header or default user
-  req.userId = req.headers['x-user-id'] || 'demo-user-id';
+  const userId = req.headers['x-user-id'] || 'demo-user-id';
+  req.userId = userId;
+  
+  logger.info(`Request from user: ${userId} to ${req.method} ${req.path}`);
   next();
 };

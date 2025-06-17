@@ -8,6 +8,8 @@ import { logger } from '../utils/logger.js';
 export class CategoryService {
   static async getAllCategories(userId) {
     try {
+      logger.info(`Fetching categories for user: ${userId}`);
+      
       const { data, error } = await supabase
         .from('categories')
         .select(`
@@ -18,8 +20,13 @@ export class CategoryService {
         .eq('is_active', true)
         .order('name');
 
-      if (error) throw error;
-      return data;
+      if (error) {
+        logger.error('Supabase error in getAllCategories:', error);
+        throw error;
+      }
+      
+      logger.info(`Found ${data?.length || 0} categories for user: ${userId}`);
+      return data || [];
     } catch (error) {
       logger.error('Error fetching categories:', error);
       throw error;
@@ -28,6 +35,8 @@ export class CategoryService {
 
   static async getCategoriesByFund(fundId, userId) {
     try {
+      logger.info(`Fetching categories for fund: ${fundId}, user: ${userId}`);
+      
       const { data, error } = await supabase
         .from('categories')
         .select('*')
@@ -36,8 +45,12 @@ export class CategoryService {
         .eq('is_active', true)
         .order('name');
 
-      if (error) throw error;
-      return data;
+      if (error) {
+        logger.error('Supabase error in getCategoriesByFund:', error);
+        throw error;
+      }
+      
+      return data || [];
     } catch (error) {
       logger.error('Error fetching categories by fund:', error);
       throw error;
@@ -46,6 +59,8 @@ export class CategoryService {
 
   static async getCategoryById(categoryId, userId) {
     try {
+      logger.info(`Fetching category: ${categoryId} for user: ${userId}`);
+      
       const { data, error } = await supabase
         .from('categories')
         .select(`
@@ -56,7 +71,11 @@ export class CategoryService {
         .eq('user_id', userId)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        logger.error('Supabase error in getCategoryById:', error);
+        throw error;
+      }
+      
       return data;
     } catch (error) {
       logger.error('Error fetching category:', error);
@@ -66,6 +85,8 @@ export class CategoryService {
 
   static async createCategory(categoryData, userId) {
     try {
+      logger.info(`Creating category for user: ${userId}`, categoryData);
+      
       const { data, error } = await supabase
         .from('categories')
         .insert([{
@@ -75,7 +96,11 @@ export class CategoryService {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        logger.error('Supabase error in createCategory:', error);
+        throw error;
+      }
+      
       logger.info('Category created successfully:', data.id);
       return data;
     } catch (error) {
@@ -86,6 +111,8 @@ export class CategoryService {
 
   static async updateCategory(categoryId, categoryData, userId) {
     try {
+      logger.info(`Updating category: ${categoryId} for user: ${userId}`, categoryData);
+      
       const { data, error } = await supabase
         .from('categories')
         .update(categoryData)
@@ -94,7 +121,11 @@ export class CategoryService {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        logger.error('Supabase error in updateCategory:', error);
+        throw error;
+      }
+      
       logger.info('Category updated successfully:', categoryId);
       return data;
     } catch (error) {
@@ -105,6 +136,8 @@ export class CategoryService {
 
   static async deactivateCategory(categoryId, userId) {
     try {
+      logger.info(`Deactivating category: ${categoryId} for user: ${userId}`);
+      
       const { data, error } = await supabase
         .from('categories')
         .update({ is_active: false })
@@ -113,7 +146,11 @@ export class CategoryService {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        logger.error('Supabase error in deactivateCategory:', error);
+        throw error;
+      }
+      
       logger.info('Category deactivated successfully:', categoryId);
       return data;
     } catch (error) {
@@ -124,6 +161,8 @@ export class CategoryService {
 
   static async activateCategory(categoryId, userId) {
     try {
+      logger.info(`Activating category: ${categoryId} for user: ${userId}`);
+      
       const { data, error } = await supabase
         .from('categories')
         .update({ is_active: true })
@@ -132,7 +171,11 @@ export class CategoryService {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        logger.error('Supabase error in activateCategory:', error);
+        throw error;
+      }
+      
       logger.info('Category activated successfully:', categoryId);
       return data;
     } catch (error) {
@@ -143,13 +186,19 @@ export class CategoryService {
 
   static async deleteCategory(categoryId, userId) {
     try {
+      logger.info(`Deleting category: ${categoryId} for user: ${userId}`);
+      
       const { error } = await supabase
         .from('categories')
         .delete()
         .eq('id', categoryId)
         .eq('user_id', userId);
 
-      if (error) throw error;
+      if (error) {
+        logger.error('Supabase error in deleteCategory:', error);
+        throw error;
+      }
+      
       logger.info('Category deleted successfully:', categoryId);
       return true;
     } catch (error) {
