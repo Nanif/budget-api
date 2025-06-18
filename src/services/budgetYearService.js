@@ -2,6 +2,7 @@
  * Budget Year service for database operations
  */
 
+
 import { supabase } from '../config/supabase.js';
 import { logger } from '../utils/logger.js';
 
