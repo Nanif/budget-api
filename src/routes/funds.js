@@ -15,9 +15,31 @@ router.get('/', async (req, res) => {
   try {
     const { budgetYearId } = req.query;
     const funds = await FundService.getAllFunds(req.userId, budgetYearId);
+    // Map each fund to the required client structure
+    const CategoryService = (await import('../services/categoryService.js')).CategoryService;
+    const ExpenseService = (await import('../services/expenseService.js')).ExpenseService;
+    const mappedFunds = await Promise.all(funds.map(async (fund) => {
+      // Fetch categories for this fund
+      const categories = await CategoryService.getCategoriesByFund(fund.id, req.userId);
+      // Calculate spent for this fund and budget year
+      const budget = fund.fund_budgets[0];
+      const spent = budget ? await ExpenseService.getFundSpent(fund.id, budget.budget_year_id, req.userId) : 0;
+      return {
+        id: fund.id,
+        name: fund.name,
+        type: fund.type,
+        amount: fund.fund_budgets[0].amount,
+        level: fund.level,
+        include_in_budget: fund.include_in_budget,
+        amount_given: fund.fund_budgets[0].amount_given || 0,
+        categories: categories.map(cat => cat.id),
+        spent,
+        budget_year_id: fund.fund_budgets.budget_year_id
+      };
+    }));
     res.json({
       success: true,
-      data: funds,
+      data: mappedFunds,
       message: 'Funds retrieved successfully'
     });
   } catch (error) {

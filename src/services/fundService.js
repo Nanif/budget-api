@@ -11,13 +11,16 @@ export class FundService {
       let query = supabase
         .from('funds')
         .select(`
-          *,
-          fund_budgets!inner(
+          id,
+          name,
+          type,
+          level,
+          include_in_budget,
+          fund_budgets:fund_budgets!inner(
             id,
             budget_year_id,
             amount,
-            amount_given,
-            spent
+            amount_given
           )
         `)
         .eq('user_id', userId)
@@ -28,8 +31,31 @@ export class FundService {
       }
 
       const { data, error } = await query.order('display_order');
+      if (Array.isArray(data)) {
+        data.forEach((fund, idx) => {
+          console.log(`Fund #${idx} | id: ${fund.id} | name: ${fund.name}`);
+          console.log('  fund_budgets:', fund.fund_budgets);
+        });
+      }
+            if (error) throw error;
 
-      if (error) throw error;
+      // Flatten funds and attach only budget info
+      // const flatFunds = (data || []).map(fund => {
+      //   let budget = null;
+      //   if (fund.fund_budgets && Array.isArray(fund.fund_budgets) && fund.fund_budgets.length > 0) {
+      //     budget = fund.fund_budgets[0];
+      //   }
+      //   return {
+      //     id: fund.id,
+      //     name: fund.name,
+      //     type: fund.type,
+      //     amount: budget ? budget.amount : null,
+      //     amount_given: budget ? budget.amount_given : null,
+      //     level: fund.level,
+      //     include_in_budget: fund.include_in_budget,
+      //     budget_year_id: budget ? budget.budget_year_id : null
+      //   };
+      // });
       return data;
     } catch (error) {
       logger.error('Error fetching funds:', error);

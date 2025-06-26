@@ -27,16 +27,52 @@ dotenv.config();
 
 const app = express();
 
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://localhost:3000',
+  'https://your-frontend-domain.com',
+];
+
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (
+      !origin ||
+      allowedOrigins.includes(origin) ||
+      /\.webcontainer-api\.io$/.test(origin) ||
+      /\.local-credentialless\.webcontainer-api\.io$/.test(origin)
+    ) {
+      callback(null, true);
+    } else {
+      console.warn('Blocked CORS for:', origin);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: [
+    'Content-Type', 
+    'Authorization', 
+    'x-user-id',
+    'Accept',
+    'Origin',
+    'X-Requested-With'
+  ]
+};
+
+app.use(cors(corsOptions));
+
+
 // Middleware
-app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cors(corsOptions));
 
 // Request logging middleware
 app.use((req, res, next) => {
   logger.info(`${req.method} ${req.path}`, {
     ip: req.ip,
-    userAgent: req.get('User-Agent')
+    userAgent: req.get('User-Agent'),
+    origin: req.get('Origin')
   });
   next();
 });

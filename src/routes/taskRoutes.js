@@ -48,94 +48,94 @@ router.use(getUserId);
  *           example: false
  */
 
-/**
- * @swagger
- * /api/tasks:
- *   get:
- *     summary: Get all tasks with optional filters
- *     tags: [Tasks]
- *     parameters:
- *       - in: query
- *         name: completed
- *         schema:
- *           type: boolean
- *         description: Filter by completion status
- *       - in: query
- *         name: important
- *         schema:
- *           type: boolean
- *         description: Filter by importance
- *       - in: query
- *         name: search
- *         schema:
- *           type: string
- *         description: Search in title and description
- *       - in: query
- *         name: page
- *         schema:
- *           type: integer
- *           default: 1
- *         description: Page number for pagination
- *       - in: query
- *         name: limit
- *         schema:
- *           type: integer
- *           default: 50
- *         description: Number of items per page
- *     responses:
- *       200:
- *         description: Tasks retrieved successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                   example: true
- *                 data:
- *                   type: array
- *                   items:
- *                     $ref: '#/components/schemas/Task'
- *                 message:
- *                   type: string
- *                   example: "Tasks retrieved successfully"
- *       500:
- *         description: Server error
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Error'
- */
-router.get('/', async (req, res) => {
-  try {
-    console.log("fgdfgdsfgrfv");
-    
-    const filters = {
-      completed: req.query.completed !== undefined ? req.query.completed === 'true' : undefined,
-      important: req.query.important !== undefined ? req.query.important === 'true' : undefined,
-      search: req.query.search,
-      page: req.query.page,
-      limit: req.query.limit
-    };
-    console.log("fgdfgdsfgrfv1111");
+  /**
+   * @swagger
+   * /api/tasks:
+   *   get:
+   *     summary: Get all tasks with optional filters
+   *     tags: [Tasks]
+   *     parameters:
+   *       - in: query
+   *         name: completed
+   *         schema:
+   *           type: boolean
+   *         description: Filter by completion status
+   *       - in: query
+   *         name: important
+   *         schema:
+   *           type: boolean
+   *         description: Filter by importance
+   *       - in: query
+   *         name: search
+   *         schema:
+   *           type: string
+   *         description: Search in title and description
+   *       - in: query
+   *         name: page
+   *         schema:
+   *           type: integer
+   *           default: 1
+   *         description: Page number for pagination
+   *       - in: query
+   *         name: limit
+   *         schema:
+   *           type: integer
+   *           default: 50
+   *         description: Number of items per page
+   *     responses:
+   *       200:
+   *         description: Tasks retrieved successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 data:
+   *                   type: array
+   *                   items:
+   *                     $ref: '#/components/schemas/Task'
+   *                 message:
+   *                   type: string
+   *                   example: "Tasks retrieved successfully"
+   *       500:
+   *         description: Server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
+   */
+  router.get('/', async (req, res) => {
+    try {
+      console.log("fgdfgdsfgrfv");
+      
+      const filters = {
+        completed: req.query.completed !== undefined ? req.query.completed === 'true' : undefined,
+        important: req.query.important !== undefined ? req.query.important === 'true' : undefined,
+        search: req.query.search,
+        page: req.query.page,
+        limit: req.query.limit
+      };
+      console.log("fgdfgdsfgrfv1111");
 
-    const tasks = await TaskService.getAllTasks(req.userId, filters);
-    logger.info("Tasks retrieved successfully", tasks);
-    res.json({
-      success: true,
-      data: tasks,
-      message: 'Tasks retrieved successfully'
-    });
-  } catch (error) {
-    logger.error('Error in GET /api/tasks:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to retrieve tasks',
-      message: error.message
-    });
-  }
-});
+      const tasks = await TaskService.getAllTasks(req.userId, filters);
+      logger.info("Tasks retrieved successfully");
+      res.json({
+        success: true,
+        data: tasks,
+        message: 'Tasks retrieved successfully'
+      });
+    } catch (error) {
+      logger.error('Error in GET /api/tasks:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to retrieve tasks',
+        message: error.message
+      });
+    }
+  });
 
 /**
  * @swagger

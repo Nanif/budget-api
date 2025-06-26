@@ -6,6 +6,17 @@ import { supabase } from '../config/supabase.js';
 import { logger } from '../utils/logger.js';
 
 export class ExpenseService {
+  static async getFundSpent(fundId, budgetYearId, userId) {
+    const { data, error } = await supabase
+      .from('expenses')
+      .select('amount')
+      .eq('fund_id', fundId)
+      .eq('budget_year_id', budgetYearId)
+      .eq('user_id', userId);
+    if (error) throw error;
+    return (data || []).reduce((sum, exp) => sum + (Number(exp.amount) || 0), 0);
+  }
+
   static async getAllExpenses(userId, filters = {}) {
     try {
       let query = supabase

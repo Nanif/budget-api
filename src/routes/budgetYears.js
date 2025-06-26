@@ -196,7 +196,30 @@ router.get('/:id', async (req, res) => {
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/BudgetYearInput'
+ *             type: object
+ *             required:
+ *               - name
+ *               - startDate
+ *               - endDate
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: Budget year name
+ *                 example: "01/25 - 12/25"
+ *               startDate:
+ *                 type: string
+ *                 format: date
+ *                 description: Budget year start date
+ *                 example: "2025-01-01"
+ *               endDate:
+ *                 type: string
+ *                 format: date
+ *                 description: Budget year end date
+ *                 example: "2025-12-31"
+ *               is_active:
+ *                 type: boolean
+ *                 description: Whether this budget year is active
+ *                 example: true
  *     responses:
  *       201:
  *         description: Budget year created successfully
@@ -233,6 +256,7 @@ router.post('/', async (req, res) => {
       end_date,
       is_active: is_active || false
     };
+
 
     const budgetYear = await BudgetYearService.createBudgetYear(budgetYearData, req.userId);
     res.status(201).json({
