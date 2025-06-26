@@ -24,7 +24,7 @@ export class ExpenseService {
         .select(`
           *,
           categories(name, color_class),
-          funds(name, type)
+          funds(name, type, color_class)
         `)
         .eq('user_id', userId);
 
