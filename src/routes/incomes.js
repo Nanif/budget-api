@@ -4,6 +4,7 @@
 
 import express from 'express';
 import { IncomeService } from '../services/incomeService.js';
+import { BudgetYearService } from '../services/budgetYearService.js';
 import { getUserId } from '../middleware/auth.js';
 import { logger } from '../utils/logger.js';
 
@@ -81,8 +82,18 @@ router.get('/:id', async (req, res) => {
 // POST / - Create new income
 router.post('/', async (req, res) => {
   try {
-    const { name, amount, budget_year_id, source, date, note } = req.body;
     
+    const { name, amount, source, date, note } = req.body;
+    
+    //todo calculate the budget_year_id from the date add the getBudgetYearIdByDate in budgetService
+    const budget_year_id = await BudgetYearService.getBudgetYearIdByDate(date);
+    if (!budget_year_id) {
+      return res.status(400).json({
+        success: false,
+        error: 'לא קיימת שנת תקציב עבור תאריך ההכנסה'
+      });
+    }
+
     if (!name || !amount || !budget_year_id || !date) {
       return res.status(400).json({
         success: false,

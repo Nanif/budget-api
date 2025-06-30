@@ -138,4 +138,30 @@ export class BudgetYearService {
       throw error;
     }
   }
+
+  static async getBudgetYearIdByDate(date) {
+    try {
+      console.log(date, "date");
+      
+      const { data: budgetYears, error } = await supabase
+        .from('budget_years')
+        .select('id, start_date, end_date')
+        .lte('start_date', date)
+        .gte('end_date', date);
+
+      if (error) throw error;
+      console.log("budgetYears", budgetYears);
+      
+      if (!budgetYears || budgetYears.length === 0) {
+        return null;
+      }
+      console.log("budgetYears", budgetYears);
+      
+      // Return the first matching budget year (should only be one match)
+      return budgetYears[0].id;
+    } catch (error) {
+      logger.error('Error in getBudgetYearIdByDate:', error);
+      throw error;
+    }
+  }
 }

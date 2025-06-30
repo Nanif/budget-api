@@ -6,7 +6,7 @@ import express from 'express';
 import { ExpenseService } from '../services/expenseService.js';
 import { getUserId } from '../middleware/auth.js';
 import { logger } from '../utils/logger.js';
-
+import {BudgetYearService} from '../services/budgetYearService.js';
 const router = express.Router();
 router.use(getUserId);
 
@@ -84,12 +84,22 @@ router.get('/:id', async (req, res) => {
 // POST / - Create new expense
 router.post('/', async (req, res) => {
   try {
-    const { name, amount, budget_year_id, category_id, fund_id, date, note } = req.body;
-    
-    if (!name || !amount || !budget_year_id || !category_id || !fund_id || !date) {
+    const { name, amount, category_id, fund_id, date, note } = req.body;
+
+    if (!name || !amount || !category_id || !fund_id || !date) {
       return res.status(400).json({
         success: false,
         error: 'Name, amount, budget_year_id, category_id, fund_id, and date are required'
+      });
+    }
+    
+        const budget_year_id = await BudgetYearService.getBudgetYearIdByDate(date);
+    
+    // const budget_year_id = await IncomeService.getBudgetYearIdByDate(date);
+    if (!budget_year_id) {
+      return res.status(400).json({
+        success: false,
+        error: 'לא קיימת שנת תקציב עבור תאריך ההוצאה'
       });
     }
 
@@ -122,16 +132,26 @@ router.post('/', async (req, res) => {
 // PUT /:id - Update expense
 router.put('/:id', async (req, res) => {
   try {
-    const { name, amount, budget_year_id, category_id, fund_id, date, note } = req.body;
-    
+    const { name, amount, category_id, fund_id, date, note } = req.body;
+
     const expenseData = {};
     if (name !== undefined) expenseData.name = name;
     if (amount !== undefined) expenseData.amount = amount;
-    if (budget_year_id !== undefined) expenseData.budget_year_id = budget_year_id;
     if (category_id !== undefined) expenseData.category_id = category_id;
     if (fund_id !== undefined) expenseData.fund_id = fund_id;
     if (date !== undefined) expenseData.date = date;
     if (note !== undefined) expenseData.note = note;
+
+    //get budget_year_id from date
+    
+    const budget_year_id = await BudgetYearService.getBudgetYearIdByDate(date);
+    if (!budget_year_id) {
+      return res.status(400).json({
+        success: false,
+        error: 'לא קיימת שנת תקציב עבור תאריך ההוצאה'
+      });
+    }
+    expenseData.budget_year_id = budget_year_id;
 
     const expense = await ExpenseService.updateExpense(req.params.id, expenseData, req.userId);
     res.json({
