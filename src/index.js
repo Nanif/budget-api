@@ -21,6 +21,7 @@ import titheRoutes from './routes/tithe.js';
 import debtRoutes from './routes/debts.js';
 import assetRoutes from './routes/assets.js';
 import dashboardRoutes from './routes/dashboard.js';
+import settingsRoutes from './routes/SystemSettingsService.js';
 
 // Load environment variables
 dotenv.config();
@@ -105,6 +106,7 @@ app.use('/api/tithe', titheRoutes);
 app.use('/api/debts', debtRoutes);
 app.use('/api/assets', assetRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/system-settings', settingsRoutes);
 
 // Root endpoint
 app.get('/', (req, res) => {
@@ -124,7 +126,8 @@ app.get('/', (req, res) => {
       expenses: '/api/expenses',
       tithe: '/api/tithe',
       debts: '/api/debts',
-      assets: '/api/assets'
+      assets: '/api/assets',
+      systemSettings: '/api/system-settings'
     }
   });
 });
