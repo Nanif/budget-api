@@ -79,6 +79,7 @@ router.get('/:id', async (req, res) => {
   }
 });
 
+
 // POST / - Create new income
 router.post('/', async (req, res) => {
   try {
