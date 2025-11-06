@@ -23,6 +23,7 @@ import assetRoutes from './routes/assets.js';
 import dashboardRoutes from './routes/dashboard.js';
 import settingsRoutes from './routes/SystemSettingsService.js';
 import notesRoutes from './routes/notes.js';
+import cashEnvelopeTransactionRoutes from './routes/cashEnvelopeTransactions.js';
 
 // Load environment variables
 dotenv.config();
@@ -109,6 +110,7 @@ app.use('/api/assets', assetRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/system-settings', settingsRoutes);
 app.use('/api/notes', notesRoutes);
+app.use('/api/cash-envelope-transactions', cashEnvelopeTransactionRoutes);
 
 // Root endpoint
 app.get('/', (req, res) => {
