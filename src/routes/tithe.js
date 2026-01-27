@@ -4,6 +4,7 @@
 
 import express from 'express';
 import { TitheService } from '../services/titheService.js';
+import { BudgetYearService } from '../services/budgetYearService.js';
 import { getUserId } from '../middleware/auth.js';
 import { logger } from '../utils/logger.js';
 
@@ -14,8 +15,9 @@ router.use(getUserId);
 router.get('/', async (req, res) => {
   try {
     const filters = {
-      startDate: req.query.startDate,
-      endDate: req.query.endDate,
+      budgetYearId: req.query.budgetYearId || req.query.budget_year_id,
+      startDate: req.query.startDate || req.query.start_date,
+      endDate: req.query.endDate || req.query.end_date,
       search: req.query.search,
       page: req.query.page,
       limit: req.query.limit
@@ -40,7 +42,8 @@ router.get('/', async (req, res) => {
 // GET /summary - Get tithe summary
 router.get('/summary', async (req, res) => {
   try {
-    const summary = await TitheService.getTitheSummary(req.userId);
+    const budgetYearId = req.query.budgetYearId || req.query.budget_year_id;
+    const summary = await TitheService.getTitheSummary(req.userId, budgetYearId);
     res.json({
       success: true,
       data: summary,
@@ -87,9 +90,18 @@ router.post('/', async (req, res) => {
       });
     }
 
+    const budget_year_id = await BudgetYearService.getBudgetYearIdByDate(date);
+    if (!budget_year_id) {
+      return res.status(400).json({
+        success: false,
+        error: 'No budget year found for the provided date'
+      });
+    }
+
     const titheData = {
       description,
       amount,
+      budget_year_id,
       date,
       note
     };
@@ -120,6 +132,17 @@ router.put('/:id', async (req, res) => {
     if (amount !== undefined) titheData.amount = amount;
     if (date !== undefined) titheData.date = date;
     if (note !== undefined) titheData.note = note;
+
+    if (date !== undefined) {
+      const budget_year_id = await BudgetYearService.getBudgetYearIdByDate(date);
+      if (!budget_year_id) {
+        return res.status(400).json({
+          success: false,
+          error: 'No budget year found for the provided date'
+        });
+      }
+      titheData.budget_year_id = budget_year_id;
+    }
 
     const tithe = await TitheService.updateTithe(req.params.id, titheData, req.userId);
     res.json({

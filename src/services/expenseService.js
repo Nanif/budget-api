@@ -19,6 +19,21 @@ export class ExpenseService {
 
   static async getAllExpenses(userId, filters = {}) {
     try {
+      let categoryIdFromName;
+      if (filters.categoryName && !filters.categoryId) {
+        const { data, error } = await supabase
+          .from('categories')
+          .select('id')
+          .eq('name', filters.categoryName)
+          .eq('user_id', userId)
+          .maybeSingle();
+        if (error) throw error;
+        if (!data?.id) {
+          return [];
+        }
+        categoryIdFromName = data.id;
+      }
+
       let query = supabase
         .from('expenses')
         .select(`
@@ -29,11 +44,14 @@ export class ExpenseService {
         .eq('user_id', userId);
 
       // Apply filters
+      console.log('Filters applied:', filters.budgetYearId, filters.categoryId, filters.fundId);
       if (filters.budgetYearId) {
         query = query.eq('budget_year_id', filters.budgetYearId);
       }
       if (filters.categoryId) {
         query = query.eq('category_id', filters.categoryId);
+      } else if (categoryIdFromName) {
+        query = query.eq('category_id', categoryIdFromName);
       }
       if (filters.fundId) {
         query = query.eq('fund_id', filters.fundId);
@@ -59,8 +77,12 @@ export class ExpenseService {
       const limit = parseInt(filters.limit) || 50;
       const offset = (page - 1) * limit;
 
+      const allowedSortFields = new Set(['date', 'amount', 'name']);
+      const sortField = allowedSortFields.has(filters.sortField) ? filters.sortField : 'date';
+      const ascending = (filters.sortDirection || '').toLowerCase() === 'asc';
+
       query = query
-        .order('date', { ascending: false })
+        .order(sortField, { ascending })
         .range(offset, offset + limit - 1);
 
       const { data, error } = await query;

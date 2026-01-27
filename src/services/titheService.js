@@ -14,6 +14,9 @@ export class TitheService {
         .eq('user_id', userId);
 
       // Apply filters
+      if (filters.budgetYearId) {
+        query = query.eq('budget_year_id', filters.budgetYearId);
+      }
       if (filters.startDate) {
         query = query.gte('date', filters.startDate);
       }
@@ -116,21 +119,33 @@ export class TitheService {
     }
   }
 
-  static async getTitheSummary(userId) {
+  static async getTitheSummary(userId, budgetYearId) {
     try {
       // Get total tithes given
-      const { data: titheData, error: titheError } = await supabase
+      let titheQuery = supabase
         .from('tithe_given')
         .select('amount, date')
         .eq('user_id', userId);
 
+      if (budgetYearId) {
+        titheQuery = titheQuery.eq('budget_year_id', budgetYearId);
+      }
+
+      const { data: titheData, error: titheError } = await titheQuery;
+
       if (titheError) throw titheError;
 
       // Get total income for tithe calculation
-      const { data: incomeData, error: incomeError } = await supabase
+      let incomeQuery = supabase
         .from('incomes')
         .select('amount')
         .eq('user_id', userId);
+
+      if (budgetYearId) {
+        incomeQuery = incomeQuery.eq('budget_year_id', budgetYearId);
+      }
+
+      const { data: incomeData, error: incomeError } = await incomeQuery;
 
       if (incomeError) throw incomeError;
 
