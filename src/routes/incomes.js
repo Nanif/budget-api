@@ -15,7 +15,7 @@ router.use(getUserId);
 router.get('/', async (req, res) => {
   try {
     const filters = {
-      budgetYearId: req.query.budgetYearId,
+      budgetYearId: req.query.budgetYearId || req.query.budget_year_id,
       month: req.query.month,
       year: req.query.year,
       source: req.query.source,

@@ -14,16 +14,19 @@ router.use(getUserId);
 router.get('/', async (req, res) => {
   try {
     const filters = {
-      budgetYearId: req.query.budgetYearId,
-      categoryId: req.query.categoryId,
-      fundId: req.query.fundId,
-      startDate: req.query.startDate,
-      endDate: req.query.endDate,
-      minAmount: req.query.minAmount,
-      maxAmount: req.query.maxAmount,
+      budgetYearId: req.query.budgetYearId || req.query.budget_year_id,
+      categoryId: req.query.categoryId || req.query.category_id,
+      categoryName: req.query.category || req.query.category_name,
+      fundId: req.query.fundId || req.query.fund_id,
+      startDate: req.query.startDate || req.query.start_date,
+      endDate: req.query.endDate || req.query.end_date,
+      minAmount: req.query.minAmount || req.query.min_amount,
+      maxAmount: req.query.maxAmount || req.query.max_amount,
       search: req.query.search,
       page: req.query.page,
-      limit: req.query.limit
+      limit: req.query.limit,
+      sortField: req.query.sortField || req.query.sort_field,
+      sortDirection: req.query.sortDirection || req.query.sort_direction
     };
 
     const expenses = await ExpenseService.getAllExpenses(req.userId, filters);
